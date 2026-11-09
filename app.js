@@ -65,3 +65,19 @@ $('multiplier').addEventListener('change',e=>{state.multiplier=Number(e.target.v
 document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===btn));document.querySelectorAll('.page').forEach(page=>page.classList.toggle('active',page.id===btn.dataset.tab));render();}));
 $('downloadCsv').addEventListener('click',()=>{const rows=[['Tax year','Applicant','Type','Gross/profit','Personal allowance','Income tax','NI','Net'],...state.people.map(p=>{const r=calculatePerson(p,state.year);return [state.year,p.name,p.type,r.gross.toFixed(2),r.allowance.toFixed(2),r.incomeTax.toFixed(2),r.ni.toFixed(2),r.net.toFixed(2)];})];const csv=rows.map(row=>row.map(value=>'"'+String(value).replaceAll('"','""')+'"').join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='affordability-checkr-'+state.year.replace('/','-')+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500);});
 render();
+
+// Checklist state is private to this browser, separate from financial calculations.
+const refBoxes = [...document.querySelectorAll('input[data-ref]')];
+const refKey = 'affordability-checkr-reference-v1';
+let refSaved = [];
+try { const raw=JSON.parse(localStorage.getItem(refKey)); if(Array.isArray(raw))refSaved=raw; }catch{}
+refBoxes.forEach(box => {box.checked = refSaved.includes(box.dataset.ref);});
+function updateRefProgress(){
+  const checked=refBoxes.filter(box=>box.checked).length;
+  document.getElementById('refProgressText').textContent=`${checked} of ${refBoxes.length} prepared`;
+  document.getElementById('refProgressBar').style.width=`${100*checked/Math.max(1,refBoxes.length)}%`;
+  try{localStorage.setItem(refKey,JSON.stringify(refBoxes.filter(box=>box.checked).map(box=>box.dataset.ref)));}catch{}
+}
+refBoxes.forEach(box=>box.addEventListener('change',updateRefProgress));
+document.getElementById('refClear').addEventListener('click',()=>{refBoxes.forEach(box=>{box.checked=false});updateRefProgress();});
+updateRefProgress();
