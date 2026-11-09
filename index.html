@@ -6,13 +6,13 @@
   <meta name="theme-color" content="#f7f7f3" />
   <meta name="description" content="Affordability Checkr — estimate UK take-home pay, self-employed tax, PAYE and rental affordability for up to five applicants. Free, private and no account needed." />
   <title>Affordability Checkr | UK Rent & Tax Calculator</title>
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="#top" aria-label="Affordability Checkr home"><span class="brand-symbol">a<span class="brand-dot">.</span></span><span>Affordability <b>Checkr</b></span></a>
-      <div class="top-actions"><span class="privacy"><span class="privacy-dot"></span> No account · No data sent</span><button id="reset" class="btn btn-ghost" type="button">↺ Reset</button></div>
+      <div class="top-actions"><span class="privacy"><span class="privacy-dot"></span> No account · No data sent</span><button id="openTour" class="btn btn-ghost" type="button" aria-haspopup="dialog">? Take the tour</button><button id="reset" class="btn btn-ghost" type="button">↺ Reset</button></div>
     </header>
     <main id="top">
       <section class="hero">
@@ -92,6 +92,17 @@
       <footer><div class="footer-brand">Affordability <b>Checkr</b><span> · Make your move with confidence.</span></div><p>Free estimation tool · No login or server · Values stay in this browser. This is not a tax return, financial advice or a guarantee of referencing approval. England, Wales and Northern Ireland only; Scottish Income Tax, student loans, pensions, multiple concurrent income sources, complex tax reliefs and exact pay-period NI calculations are not modelled. “Other” income uses simplified assumptions and may have different actual tax treatment. Always verify with HMRC and your agency.</p></footer>
     </main>
   </div>
-  <script type="module" src="app.js?v=4"></script>
+  <div id="welcomeTour" class="tour-overlay" hidden>
+    <section class="tour-modal" role="dialog" aria-modal="true" aria-labelledby="tourTitle" aria-describedby="tourCopy" tabindex="-1">
+      <div class="tour-top"><div id="tourIcon" class="tour-icon" aria-hidden="true">⌂</div><button id="tourSkip" class="tour-close" type="button" aria-label="Skip introduction">Skip tour ×</button></div>
+      <div id="tourEyebrow" class="tour-eyebrow">WELCOME</div>
+      <h2 id="tourTitle">Welcome to Affordability Checkr</h2>
+      <p id="tourCopy">See what you could afford to rent or buy, in one simple place.</p>
+      <div class="tour-mobile-note"><span aria-hidden="true">↔</span> On a phone? Swipe the menu tabs left or right to find <strong>Buying a home</strong>.</div>
+      <div class="tour-footer"><div class="tour-progress"><div id="tourDots" class="tour-dots" aria-hidden="true"></div><span id="tourCount">1 of 4</span></div><div class="tour-buttons"><button id="tourBack" class="btn btn-ghost" type="button" hidden>← Back</button><button id="tourNext" class="btn btn-main" type="button">Next →</button></div></div>
+    </section>
+  </div>
+  <script type="module" src="app.js?v=5"></script>
+  <script type="module" src="tour.js?v=5"></script>
 </body>
 </html>
