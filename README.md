@@ -56,7 +56,3 @@ The tab includes adjustable house price, deposit, interest rate, mortgage length
 The 2026 rules and programme sources are linked directly inside the app from GOV.UK, plus London City Hall. Stamp Duty estimates are for qualifying **England** transactions, not Scotland/Wales/Northern Ireland and exclude nonresident surcharges and higher rates. If any purchase is complex, obtain a solicitor's calculation.
 
 Data remains local to the user's browser; the site does not request uploads of sensitive financial documents.
-
-## First-visit tour (v5)
-
-The welcome popup appears automatically on the first visit to a browser. It briefly introduces applicant income, renting and referencing, and buying a home (including a tip to swipe the navigation tabs sideways on mobile). Visitors may skip, move backwards/forwards, or reopen it with **? Take the tour** in the header. The completion flag lives only in that browser's `localStorage`; no login or data transfer is involved. `tour.js` is required at the repository root.
