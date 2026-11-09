@@ -5,7 +5,7 @@ A responsive, free UK rental affordability, tax and first-time home buying dashb
 ## Deploy to GitHub Pages
 
 1. Create a **public** GitHub repository called `affordability-checkr`.
-2. Upload `index.html`, `style.css`, `app.js`, `tax.js`, `purchase.js` and `README.md` to the **root** of the repository.
+2. Upload `index.html`, `style.css`, `app.js`, `tax.js`, `purchase.js`, `tour.js` and `README.md` to the **root** of the repository.
 3. Open your repository's **Settings → Pages**.
 4. Under **Build and deployment**, choose **Deploy from a branch**. Select `main` and `/ (root)`, then **Save**.
 5. Once GitHub finishes deploying, your website is at `https://YOUR-USERNAME.github.io/affordability-checkr/`.
@@ -56,3 +56,19 @@ The tab includes adjustable house price, deposit, interest rate, mortgage length
 The 2026 rules and programme sources are linked directly inside the app from GOV.UK, plus London City Hall. Stamp Duty estimates are for qualifying **England** transactions, not Scotland/Wales/Northern Ireland and exclude nonresident surcharges and higher rates. If any purchase is complex, obtain a solicitor's calculation.
 
 Data remains local to the user's browser; the site does not request uploads of sensitive financial documents.
+
+## First-visit tour (v5)
+
+The welcome popup appears automatically on the first visit to a browser. It briefly introduces applicant income, renting and referencing, and buying a home (including a tip to swipe the navigation tabs sideways on mobile). Visitors may skip, move backwards/forwards, or reopen it with **? Take the tour** in the header. The completion flag lives only in that browser's `localStorage`; no login or data transfer is involved. `tour.js` is required at the repository root.
+
+## V6: Buyer-first quick start
+
+The **Buying a home** tab begins with an optional beginner calculator. Buyers can reuse the incomes of up to five applicants from Overview or manually enter gross annual household income, enter their savings, monthly debt payments and emergency cash reserve. This produces an indicative standard buying budget and scenario cards for five first-time buyer routes. Clicking a route updates the full mortgage calculator.
+
+- Income assumptions default to **4.5×** annual income, with selectable 4×/5× illustrations. For a cautious debt scenario, monthly debt payments are subtracted from annual income as `monthly repayments × 12` before applying the multiple. This is *not a lender underwriting formula*.
+- The calculator reserves £2,500 for illustrative legal/moving costs, computes estimated England SDLT where applicable, and assumes a 5% deposit for standard routes. Savings and income both constrain the price estimate.
+- For Shared Ownership, the cash/mortgage estimate also applies a rough monthly mortgage + rent + service charge check of 35% of gross monthly household income minus monthly debt payments; actual lender/provider affordability tests are more comprehensive. Shared Ownership Stamp Duty is excluded and needs a solicitor's calculation.
+- First Homes scheme caps and income restrictions are displayed. Your First Home remains a **future scenario** for the expected February 2027 application launch, not an available scheme. Local price caps, qualifications and lender criteria must be checked.
+- **None of the scenario budgets are approval or a guaranteed entitlement.** All financial inputs and checklists remain in local browser storage; no account needed.
+
+Official reading: https://www.gov.uk/first-homes-scheme/overview ; https://www.gov.uk/shared-ownership-scheme/who-can-apply ; https://www.gov.uk/government/publications/your-first-home/your-first-home ; https://www.gov.uk/stamp-duty-land-tax/residential-property-rates

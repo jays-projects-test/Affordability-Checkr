@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#f7f7f3" />
   <meta name="description" content="Affordability Checkr — estimate UK take-home pay, self-employed tax, PAYE and rental affordability for up to five applicants. Free, private and no account needed." />
-  <title>Affordability Checkr | UK Rent & Tax Calculator</title>
-  <link rel="stylesheet" href="style.css?v=4" />
+  <title>Affordability Checkr | UK Rent, Tax & First-Time Buyer Calculator</title>
+  <link rel="stylesheet" href="style.css?v=6" />
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="#top" aria-label="Affordability Checkr home"><span class="brand-symbol">a<span class="brand-dot">.</span></span><span>Affordability <b>Checkr</b></span></a>
-      <div class="top-actions"><span class="privacy"><span class="privacy-dot"></span> No account · No data sent</span><button id="reset" class="btn btn-ghost" type="button">↺ Reset</button></div>
+      <div class="top-actions"><span class="privacy"><span class="privacy-dot"></span> No account · No data sent</span><button id="openTour" class="btn btn-ghost" type="button" aria-haspopup="dialog">? Take the tour</button><button id="reset" class="btn btn-ghost" type="button">↺ Reset</button></div>
     </header>
     <main id="top">
       <section class="hero">
@@ -39,8 +39,20 @@
 
 
       <section id="purchase" class="page purchase-page">
-        <div class="section-heading"><div class="eyebrow">YOUR FIRST HOME, MADE SIMPLE</div><h2>Compare ways to buy a home.</h2><p>Choose a buying route, move the sliders, and see your deposit, mortgage, possible monthly costs and indicative income needed. We use your applicants' earnings from the Overview.</p></div>
-        <div class="purchase-intro"><strong>Start here: pick how you'd like to buy</strong><p>These routes are not interchangeable. Some are discounts, some are smaller-deposit mortgages, and some involve paying rent or repaying a government loan. Select one to see how its numbers work.</p></div>
+        <div class="section-heading"><div class="eyebrow">YOUR FIRST HOME, MADE SIMPLE</div><h2>Compare ways to buy a home.</h2><p>Start with your income and savings to estimate what you may afford. Then compare deposits, mortgage payments and first-time buyer routes.</p></div>
+        <section class="panel buyer-quick" aria-labelledby="buyerQuickTitle">
+          <div class="eyebrow">START HERE · FIRST-TIME BUYER CHECK</div><h3 id="buyerQuickTitle">What could I afford with my income and savings?</h3>
+          <p class="buyer-help">No mortgage knowledge needed. Enter three numbers below. We’ll estimate a sensible starting budget, then show the buying options to explore.</p>
+          <div class="buyer-quick-grid">
+            <div class="buyer-field"><label for="buyerIncomeMode">1 · Whose earnings?</label><select id="buyerIncomeMode" class="full-select"><option value="household">Use applicants from Overview</option><option value="manual">Enter my own gross income</option></select><label for="buyerAnnualIncome" id="buyerIncomeLabel">Annual income before tax (£)</label><input id="buyerAnnualIncome" type="number" min="0" max="1000000" step="1000" inputmode="decimal" value="72000"><input id="buyerAnnualIncomeSlider" type="range" min="0" max="200000" step="1000" value="72000"><small id="buyerIncomeHint">Self-employed? Use business profit before personal tax. PAYE? Use gross annual pay.</small></div>
+            <div class="buyer-field"><label for="buyerSavings">2 · Total savings available (£)</label><input id="buyerSavings" type="number" min="0" max="10000000" step="500" inputmode="decimal" value="30000"><input id="buyerSavingsSlider" type="range" min="0" max="200000" step="500" value="30000"><small>Include money you can actually use for deposit and buying fees, not future earnings.</small></div>
+            <div class="buyer-field"><label for="buyerDebts">3 · Monthly debt payments (£)</label><input id="buyerDebts" type="number" min="0" max="20000" step="25" inputmode="decimal" value="0"><input id="buyerDebtsSlider" type="range" min="0" max="2000" step="25" value="0"><small>Credit cards, car finance and personal loan repayments. Lenders also assess living costs.</small></div>
+          </div>
+          <div class="buyer-quick-opts"><label for="buyerReserved">Keep aside for emergencies (£)</label><input id="buyerReserved" type="number" min="0" max="10000000" step="500" value="5000" inputmode="decimal"><label for="buyerLtv">Indicative mortgage income multiple</label><select id="buyerLtv"><option value="4">4× cautious</option><option value="4.5" selected>4.5× example</option><option value="5">5× optimistic illustration</option></select></div>
+          <div id="buyerQuickResults" aria-live="polite"></div>
+          <div class="buyer-quick-actions"><button id="buyerUseBudget" type="button" class="btn btn-main">Try my budget in the mortgage calculator ↓</button><span>These are estimates, not lender approval. Schemes have extra rules.</span></div>
+        </section>
+        <div class="purchase-intro"><strong>Next: explore ways to buy</strong><p>These routes are not interchangeable. Some are discounts, some are smaller-deposit mortgages, and some involve paying rent or repaying a government loan. Select one to see how its numbers work.</p></div>
         <div id="purchaseRoutes" class="scheme-grid"></div>
         <div id="purchaseChosen" class="selected-scheme"></div>
         <div class="purchase-layout"><section class="panel"><div class="eyebrow">STEP 2 · CUSTOMISE</div><h3>Set your purchase figures</h3><div class="purchase-inline"><div class="field"><label for="purchaseLocation">Where are you buying?</label><select id="purchaseLocation" class="full-select"><option value="london">London (England)</option><option value="england">Elsewhere in England</option></select></div><label class="purchase-checkbox"><input id="purchaseFtb" type="checkbox" checked> Everyone buying is a first-time buyer</label></div><div id="purchaseControls" class="purchase-control-grid"></div><p class="fine-print">Interest rates here are adjustable examples, not live bank quotes. Lender mortgage affordability and loan rates depend on individual circumstances, loan-to-value and product fees.</p></section>
@@ -92,6 +104,17 @@
       <footer><div class="footer-brand">Affordability <b>Checkr</b><span> · Make your move with confidence.</span></div><p>Free estimation tool · No login or server · Values stay in this browser. This is not a tax return, financial advice or a guarantee of referencing approval. England, Wales and Northern Ireland only; Scottish Income Tax, student loans, pensions, multiple concurrent income sources, complex tax reliefs and exact pay-period NI calculations are not modelled. “Other” income uses simplified assumptions and may have different actual tax treatment. Always verify with HMRC and your agency.</p></footer>
     </main>
   </div>
-  <script type="module" src="app.js?v=4"></script>
+  <div id="welcomeTour" class="tour-overlay" hidden>
+    <section class="tour-modal" role="dialog" aria-modal="true" aria-labelledby="tourTitle" aria-describedby="tourCopy" tabindex="-1">
+      <div class="tour-top"><div id="tourIcon" class="tour-icon" aria-hidden="true">⌂</div><button id="tourSkip" class="tour-close" type="button" aria-label="Skip introduction">Skip tour ×</button></div>
+      <div id="tourEyebrow" class="tour-eyebrow">WELCOME</div>
+      <h2 id="tourTitle">Welcome to Affordability Checkr</h2>
+      <p id="tourCopy">See what you could afford to rent or buy, in one simple place.</p>
+      <div class="tour-mobile-note"><span aria-hidden="true">↔</span> On a phone? Swipe the menu tabs left or right to find <strong>Buying a home</strong>.</div>
+      <div class="tour-footer"><div class="tour-progress"><div id="tourDots" class="tour-dots" aria-hidden="true"></div><span id="tourCount">1 of 4</span></div><div class="tour-buttons"><button id="tourBack" class="btn btn-ghost" type="button" hidden>← Back</button><button id="tourNext" class="btn btn-main" type="button">Next →</button></div></div>
+    </section>
+  </div>
+  <script type="module" src="app.js?v=6"></script>
+  <script type="module" src="tour.js?v=6"></script>
 </body>
 </html>

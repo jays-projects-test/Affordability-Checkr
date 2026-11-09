@@ -39,6 +39,102 @@ const schemes=[
  {id:'shared',title:'Shared Ownership',tag:'Available · England',desc:'Buy a share of a home (often 10–75%) and pay rent on the portion owned by a housing provider.',more:'Combined income cap £90k in London / £80k elsewhere, plus affordability rules. Rent, service charges and future rent increases matter. Stamp Duty is complex; get a solicitor quote.',url:'https://www.gov.uk/shared-ownership-scheme'},
  {id:'future',title:'Your First Home',tag:'Not open yet · England',desc:'New announced route with a 2.5% deposit and 20% government equity loan for qualifying new-build homes.',more:'Expected to open February 2027, subject to participating properties and eligibility. Equity loan interest-free for five years, but repayment depends on property value; future charges are not estimated here.',url:'https://www.gov.uk/government/publications/your-first-home'}
 ];
+// Beginner quick-start: estimates an initial finance range, not a lender eligibility decision.
+const quickDefaults={mode:'household',income:72000,savings:30000,debts:0,reserved:5000,multiple:4.5};
+let q={...quickDefaults};
+try{const stored=JSON.parse(localStorage.getItem('checkr-buyer-start-v1'));if(stored&&typeof stored==='object')q={...q,...stored};}catch{}
+const quickFields={buyerAnnualIncome:'income',buyerSavings:'savings',buyerDebts:'debts',buyerReserved:'reserved',buyerLtv:'multiple',buyerIncomeMode:'mode'};
+function quickSave(){try{localStorage.setItem('checkr-buyer-start-v1',JSON.stringify(q));}catch{}}
+function quickIncome(t){return q.mode==='household'?t.gross:Math.max(0,q.income);}
+function quickBudgetInfo(t){
+ const income=quickIncome(t),usable=Math.max(0,q.savings-q.reserved);
+ // Debt-adjusted illustration only. Lenders use affordability assessments, not this formula.
+ const adjustedIncome=Math.max(0,income-q.debts*12);
+ const borrowing=adjustedIncome*q.multiple;
+ return {income,usable,borrowing};
+}
+function quickRoute(route,t){
+ const b=quickBudgetInfo(t),london=s.location==='london';
+ const incomeCap=(route==='firsthomes'||route==='shared')?(london?90000:80000):route==='future'?(london?140000:110000):Infinity;
+ let constraints=[];if(b.income>incomeCap)constraints.push('Above published scheme income cap');
+ if(!s.firstTime&&(route==='firsthomes'||route==='future'))constraints.push('Requires first-time buyer status');
+ const discount=route==='firsthomes'?s.discount/100:0;
+ const share=route==='shared'?s.share/100:1;
+ const government=route==='future'?.2:0;
+ const depositPct=route==='future'?.025:.05;
+ const priceCap=route==='firsthomes'?(london?420000:250000):Infinity;
+ function financeAt(market){
+  let whole=market*(1-discount),buy=whole*share;
+  const stamp=route==='shared'?0:stampDuty(whole,s.firstTime);
+  const minimumCash=buy*depositPct+2500+stamp;
+  const availableDeposit=Math.max(0,b.usable-2500-stamp);
+  const ownCash=Math.min(buy,route==='firsthomes'?Math.min(availableDeposit,whole*.5):availableDeposit);
+  const mort=Math.max(0,buy-ownCash-market*government);
+  const monthlyHousing=repayment(mort,s.rate,s.years)+(route==='shared'?market*(1-share)*(s.shareRentRate/100)/12+s.service:0);
+  // Extra heuristic only for shared ownership: mortgage + rent + service charges can otherwise appear affordable despite very high monthly costs.
+  const housingScreen=route!=='shared'||monthlyHousing<=Math.max(0,b.income*.35/12-q.debts);
+  const passes=minimumCash<=b.usable && mort<=b.borrowing && whole<=priceCap && housingScreen && (route!=='firsthomes'||mort>=whole*.5);
+  return {passes,mort,deposit:Math.min(buy,Math.max(0,ownCash)),stamp,whole,buy};
+ }
+ // First Homes' min-50%-mortgage condition makes feasibility non-monotonic at high deposits.
+ // Use the required minimum cash for mortgage modelling rather than excessive deposits.
+ let lo=0,hi=2000000;
+ for(let i=0;i<55;i++){let mid=(lo+hi)/2;if(financeAt(mid).passes)lo=mid;else hi=mid;}
+ const result=financeAt(lo);
+ return {...result,market:lo,borrowing:b.borrowing,usable:b.usable,income:b.income,eligibleScreen:constraints.length===0,constraints};
+}
+function renderBuyerQuick(t){
+ const income=quickIncome(t),b=quickBudgetInfo(t);
+ $('buyerAnnualIncome').value=Math.round(income);
+ $('buyerAnnualIncomeSlider').value=Math.min(200000,Math.round(income/1000)*1000);
+ $('buyerAnnualIncome').disabled=q.mode==='household';
+ $('buyerAnnualIncomeSlider').disabled=q.mode==='household';
+ $('buyerIncomeMode').value=q.mode;
+ $('buyerIncomeHint').textContent=q.mode==='household'?'This uses the combined gross PAYE earnings and self-employed trading profit entered on Overview.':'PAYE: gross pay before tax. Self-employed: annual profit after business expenses, before personal tax. Add co-buyers’ qualifying income.';
+ const standard=quickRoute('standard',t);
+ const pretty=gbp;
+ const fit=standard.market>0;
+ let issue=(!fit||b.usable<2500)?'Your accessible savings may not yet cover a deposit plus buying costs.':(standard.market<100000?'Savings or income limit your starting budget.':'Your income and savings both affect your estimated budget.');
+ const candidates=[
+  ['standard','Standard mortgage','Buy the whole home. Your cash pays the deposit, Stamp Duty if due, and estimated buying fees.'],
+  ['guarantee','5% deposit mortgage','A participating lender may offer a 95% mortgage; the government guarantee is for the lender.'],
+  ['firsthomes','First Homes discount','Specific eligible homes may be sold at 30–50% off. Income, local and resale restrictions apply.'],
+  ['shared','Shared Ownership','Buy a share and pay rent on the remainder, plus service charges. The rent affects affordability.'],
+  ['future','Your First Home (from 2027)','Planned 2.5% deposit and 20% equity loan; expected applications February 2027, not available now.']
+ ];
+ const cards=candidates.map(([id,title,desc])=>{
+  const x=quickRoute(id,t);
+  const limitations=x.constraints.length?x.constraints.join('. '):'Indicative finance screen only — lender and property conditions apply.';
+  const notYet=id==='future';
+  return `<article class="buyer-route"><strong>${title}</strong><b>${x.market>=10000?`${pretty(x.market)}*`:'No budget estimated'}</b><p>${desc}</p><p>Estimated starting deposit at this maximum: ${pretty(x.market*(id==='shared'?s.share/100:1)*(id==='future'?.025:.05))}. ${id==='shared'?'Rent and service charges are additional.':''}</p>${(!x.eligibleScreen||notYet)?`<div class="buyer-flag">${notYet?'Not open yet. ':''}${x.constraints.join('. ')}</div>`:''}<button type="button" data-quick-route="${id}">Explore this route ↓</button></article>`;
+ }).join('');
+ $('buyerQuickResults').innerHTML=`<div class="buyer-result-head"><div><small>Illustrative standard purchase budget</small><strong>${fit?pretty(standard.market):'Not enough yet'}</strong><p>Calculated using a 5% minimum deposit, available savings, estimated fees and a ${q.multiple}× income scenario.</p></div><div><small>Illustrative maximum mortgage</small><strong>${pretty(b.borrowing)}</strong><p>Monthly debts reduce the income used in this simplified illustration. Lenders use their own affordability models.</p></div></div><p class="buyer-explain"><b>Location: ${s.location==='london'?'London':'England outside London'}</b> (change this below under the buying options). <b>Your figures:</b> ${pretty(income)} annual assessed income · ${pretty(q.savings)} savings · ${pretty(q.reserved)} reserved · ${pretty(b.usable)} usable for buying. ${issue} <b>*Scheme figures are finance scenarios, not properties you are approved to buy.</b> Some schemes have eligibility or availability restrictions. Shared Ownership includes a rough 35%-of-gross housing-cost screen, not a lender affordability assessment.</p><div class="buyer-routes">${cards}</div>`;
+ $('buyerUseBudget').disabled=!fit;
+}
+function initBuyerQuick(getHousehold){
+ ['buyerSavings','buyerDebts','buyerReserved','buyerLtv','buyerIncomeMode','buyerAnnualIncome'].forEach(id=>{const el=$(id);if(el)el.value=q[quickFields[id]];});
+ for(const key of ['buyerSavings','buyerDebts','buyerAnnualIncome']){let r=$(key+'Slider');if(r)r.value=q[quickFields[key]];}
+ const container=document.querySelector('.buyer-quick');
+ container.addEventListener('input',e=>{
+  const id=e.target.id;if(!(id in quickFields)&&!(id.replace('Slider','') in quickFields))return;
+  const base=id.replace(/Slider$/,'');const field=quickFields[base];
+  q[field]=field==='mode'?e.target.value:Math.max(0,Number(e.target.value)||0);
+  if(id.endsWith('Slider'))$(base).value=q[field];else if($(base+'Slider'))$(base+'Slider').value=q[field];
+  quickSave();renderBuyerQuick(getHousehold());
+ });
+ container.addEventListener('change',()=>renderBuyerQuick(getHousehold()));
+ container.addEventListener('click',e=>{
+  const route=e.target.closest('[data-quick-route]');
+  if(route){s.route=route.dataset.quickRoute;s.depositPct=s.route==='future'?2.5:5;save();renderPurchase(getHousehold());$('purchaseChosen').scrollIntoView({behavior:'smooth',block:'start'});}
+ });
+ $('buyerUseBudget').addEventListener('click',()=>{
+  const guess=quickRoute('standard',getHousehold());
+  if(guess.market<1000)return;
+  s.route='standard';s.price=Math.max(100000,Math.round(guess.market/5000)*5000);s.depositPct=5;
+  save();renderPurchase(getHousehold());$('purchaseChosen').scrollIntoView({behavior:'smooth',block:'start'});
+ });
+ renderBuyerQuick(getHousehold());
+}
 export function initPurchase(getHousehold){
  const routes=$('purchaseRoutes');
  routes.innerHTML=schemes.map(x=>`<button class="scheme-choice" type="button" data-scheme="${x.id}" aria-pressed="false"><span class="scheme-choice-top"><strong>${x.title}</strong><small>${x.tag}</small></span><span class="scheme-desc">${x.desc}</span><span class="scheme-action">Use this route →</span></button>`).join('');
@@ -57,6 +153,7 @@ export function initPurchase(getHousehold){
  $('purchaseFtb').addEventListener('change',e=>{s.firstTime=e.target.checked;save();renderPurchase(getHousehold());});
  $('purchaseRates').addEventListener('input',e=>{if(e.target.id==='lenderRate'){s.rate=minmax(e.target.value,0,20);$('mortgageRate').value=s.rate;$('mortgageRateSlider').value=s.rate;save();renderResults(getHousehold());}});
  $('purchaseRates').addEventListener('change',()=>renderPurchase(getHousehold()));
+ initBuyerQuick(getHousehold);
  renderPurchase(getHousehold());
 }
 function save(){try{localStorage.setItem('checkr-home-v1',JSON.stringify(s));}catch{}}
@@ -74,9 +171,10 @@ function renderPurchase(t){
  $('purchaseControls').innerHTML=controls.join('');
  $('lenderRate').value=s.rate;
  renderResults(t);
+ if($('buyerQuickResults'))renderBuyerQuick(t);
 }
 function renderResults(t){
- const c=calc();const income=t.gross;const feasible=income>=c.requiredIncome;
+ const c=calc();const income=quickIncome(t);const required= c.mortgage/q.multiple + q.debts*12;const feasible=income>=required;
  $('purchaseResults').innerHTML=`
  <div class="purchase-kpis"><div><small>Your estimated mortgage</small><strong>${gbp(c.mortgage)}</strong></div><div><small>Illustrative monthly mortgage</small><strong>${gbp(c.monthly)}</strong></div><div><small>All-in monthly cost estimate</small><strong>${gbp(c.total)}</strong></div></div>
  <div class="purchase-summary-list">
@@ -94,8 +192,8 @@ function renderResults(t){
  ${c.cashStamp===null?`<div><span>Stamp Duty on shared ownership</span><b>Solicitor quote required</b></div>`:`<div><span>Estimated Stamp Duty (England)</span><b>${gbp(c.cashStamp)}</b></div>`}
  <div><span>Total interest over mortgage term, if rate stays unchanged</span><b>${gbp(c.interestTotal)}</b></div>
  </div>
- <div class="mortgage-afford ${feasible?'mortgage-afford-ok':'mortgage-afford-warn'}"><div class="result-top"><b>${feasible?'Indicative income threshold met':'Indicative income below threshold'}</b><span>${feasible?'✓':'!'}</span></div><p>Your selected applicants earn <b>${gbp(income)} per year</b> before personal tax. A simple 4.5× borrowing illustration suggests <b>${gbp(c.requiredIncome)} annual income</b> for this mortgage. This is NOT a bank decision: debts, childcare, credit history, outgoings, employment type, income evidence and lender stress tests all matter.</p></div>
- ${eligibilityMessage(t,c)}
+ <div class="mortgage-afford ${feasible?'mortgage-afford-ok':'mortgage-afford-warn'}"><div class="result-top"><b>${feasible?'Indicative income threshold met':'Indicative income below threshold'}</b><span>${feasible?'✓':'!'}</span></div><p>Your selected applicants earn <b>${gbp(income)} per year</b> before personal tax. A simple ${q.multiple}× illustration with your entered monthly debts suggests <b>${gbp(required)} annual income</b> for this mortgage. This is NOT a bank decision: debts, childcare, credit history, outgoings, employment type, income evidence and lender stress tests all matter.</p></div>
+ ${eligibilityMessage({...t,gross:income},c)}
  `;
  $('rateScenarioText').textContent=`At ${s.rate.toFixed(2)}% over ${s.years} years: ${gbp(c.monthly)}/month mortgage payment. Rates below are sensitivity examples, not verified live lender offers.`;
  const points=[Math.max(0,s.rate-1),s.rate,s.rate+1];
@@ -125,4 +223,4 @@ function eligibilityMessage(t,c){
  if(!s.firstTime)msgs.push('<b>First-time status:</b> first-time Stamp Duty relief and some schemes may not be available if any purchaser has owned residential property anywhere in the world.');
  return msgs.length?`<div class="purchase-cautions">${msgs.map(x=>`<p>${x}</p>`).join('')}</div>`:'';
 }
-export function updatePurchase(t){if($('purchaseResults'))renderResults(t);}
+export function updatePurchase(t){if($('purchaseResults'))renderResults(t);if($('buyerQuickResults'))renderBuyerQuick(t);}
