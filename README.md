@@ -1,11 +1,11 @@
 # Affordability Checkr
 
-A responsive, free UK rental affordability and tax dashboard. No user account, API key, database or build process required.
+A responsive, free UK rental affordability, tax and first-time home buying dashboard. No user account, API key, database or build process required.
 
 ## Deploy to GitHub Pages
 
 1. Create a **public** GitHub repository called `affordability-checkr`.
-2. Upload `index.html`, `style.css`, `app.js`, `tax.js` and `README.md` to the **root** of the repository.
+2. Upload `index.html`, `style.css`, `app.js`, `tax.js`, `purchase.js` and `README.md` to the **root** of the repository.
 3. Open your repository's **Settings → Pages**.
 4. Under **Build and deployment**, choose **Deploy from a branch**. Select `main` and `/ (root)`, then **Save**.
 5. Once GitHub finishes deploying, your website is at `https://YOUR-USERNAME.github.io/affordability-checkr/`.
@@ -45,3 +45,14 @@ For each future tax year, recheck these HMRC sources and update `TAX_YEARS` in `
 ## Tenant referencing checklist (added November 2026)
 
 The **Referencing checklist** tab gives first-time renters in **England** a plain-English breakdown of common, PAYE and self-employed checks, parties responsible, and statutory tenant protections. A progress checklist is saved locally in the browser. It does not ask users to upload documents. Official references are linked within the tab. The legal guidance is focused on England because Right to Rent and tenancy rules differ in Scotland, Wales and Northern Ireland.
+
+
+## Buying a Home (England)
+
+The purchase tab models standard repayment mortgages, a 5% deposit scenario through the Mortgage Guarantee Scheme, First Homes property discounts, Shared Ownership mortgage plus rent, and the *Your First Home* scheme (not accepting applications as of November 2026, expected February 2027).
+
+The tab includes adjustable house price, deposit, interest rate, mortgage length, property discount, shared ownership percentage, service charges and other ownership costs. It uses the existing household income for a simple illustrative 4.5× income borrowing test. This is **not** an offer, lender affordability decision or current lender quote. Shared ownership Stamp Duty requires legal advice and is deliberately omitted from its up-front estimate. 'Your First Home' shows published equity loan interest rates after five years but excludes future property value effects and possible fees. Rates are user-entered illustrative values, **not live offers from the linked banks**.
+
+The 2026 rules and programme sources are linked directly inside the app from GOV.UK, plus London City Hall. Stamp Duty estimates are for qualifying **England** transactions, not Scotland/Wales/Northern Ireland and exclude nonresident surcharges and higher rates. If any purchase is complex, obtain a solicitor's calculation.
+
+Data remains local to the user's browser; the site does not request uploads of sensitive financial documents.
