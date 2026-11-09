@@ -1,74 +1,45 @@
-# Affordability Checkr
+# Affordability Checkr — v7.0
 
-A responsive, free UK rental affordability, tax and first-time home buying dashboard. No user account, API key, database or build process required.
+A complete, static, mobile-friendly website for GitHub Pages. No account, tracking, servers, API keys, package manager, build step or database are required.
 
-## Deploy to GitHub Pages
+## Deployment
 
-1. Create a **public** GitHub repository called `affordability-checkr`.
-2. Upload `index.html`, `style.css`, `app.js`, `tax.js`, `purchase.js`, `tour.js` and `README.md` to the **root** of the repository.
-3. Open your repository's **Settings → Pages**.
-4. Under **Build and deployment**, choose **Deploy from a branch**. Select `main` and `/ (root)`, then **Save**.
-5. Once GitHub finishes deploying, your website is at `https://YOUR-USERNAME.github.io/affordability-checkr/`.
+1. Upload `index.html`, `styles.css`, `app.js`, `rules.js`, and `.nojekyll` to the **root** of a GitHub repository (not a subfolder).
+2. Commit them to `main`.
+3. In **Settings → Pages**, choose `Deploy from a branch`, branch `main`, folder `/ (root)`.
+4. Your Pages URL will be `https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/`.
+5. Hard-refresh the page if an older version is cached.
 
-For a custom domain, configure it in **Settings → Pages → Custom domain** and follow GitHub's DNS instructions.
+## Privacy and data
 
-To run locally, use any static web server because the JavaScript uses ES modules. For example, from the folder:
+This is a **static website**. There is no remote database because users don't sign in or share data. Inputs and referencing checklist progress are saved via browser `localStorage` with the key `checkr-v7`. Reset clears the values to zero. PDF reports are generated locally via your browser's built-in print dialog; select **Save as PDF**.
 
-```bash
-python3 -m http.server 8000
-```
+## Functions
 
-Then visit `http://localhost:8000`.
+- Renting overview: 1–5 PAYE, self-employed or other-income applicants, gross/turnover and expenses, editable rent and income multiple.
+- Buying: input directly or use renting household, savings, emergency reserve, debt, property price, deposit, mortgage term, repayment rate and editable purchase fees. Estimates are bounded by both borrowing limits and deposit/cash costs. Standard, 5% deposit, First Homes and Shared Ownership comparison routes.
+- England Stamp Duty for qualifying first-time buyers or the standard rate when the purchase price is over £500,000. Shared Ownership SDLT deliberately excluded because share election and transaction rules are complex.
+- 2025/26 and 2026/27 UK Income Tax (England/Wales/NI) and NI calculations. Wales currently uses same main rates; Scotland is not modelled.
+- Referencing checklist, accessible beginner tour, professional browser-generated A4 PDF reports for renting and buying.
 
-## How the calculations work
+## Important boundaries
 
-- Supports up to **five separate applicants**: PAYE salary/hourly, self-employed (turnover minus expenses), or other income.
-- Tax years **2025/26** and **2026/27**. Applies England, Wales and Northern Ireland non-savings Income Tax bands, standard Personal Allowance and taper, employee Class 1 and self-employed Class 4 NI.
-- Includes an interactive **tax scenario editor** on the Tax breakdown tab, as well as income sliders on the Overview tab.
-- Annualised estimates: actual PAYE NI can differ where earnings fluctuate between payroll periods; assumes standard NI category A and ordinary tax code.
-- Rent affordability compares annual assessable income against **30×**, **36×** or **40×** the monthly rent. Acceptance of other income, variable hours and joint applications depends on the referencing provider.
-- Data is stored **only in browser localStorage**, to retain a draft after page refresh. No accounts, backend, tracking or transmitted income data. Use Reset to clear this stored draft. Do not use on shared devices if privacy matters.
+- Maximum mortgage uses the lower of: (a) adjusted income × an editable multiple; and (b) a simplified monthly affordability cap (35% of annual estimated net pay / 12 less declared monthly debts and service charge). Debt is also deducted from gross income for the borrowing-multiple illustration; this is a scenario assumption, not how every lender underwrites applications. Actual lenders use different rules.
+- When no income or savings are entered, purchase budget remains zero.
+- The loan / cash projection uses the **chosen deposit percentage**. The displayed maximum property price is the largest price that fits the selected deposit fraction, all editable cash costs, illustrative mortgage cap and monthly payment assumptions.
+- The additional Shared Ownership rent is estimated at an editable percent of the unsold share (most new builds around 2.75%); service charges vary.
+- Cash needed excludes recurring expenses like insurance, utilities and council tax. Shared Ownership SDLT is not included; obtain a solicitor estimate.
+- Estimates do not constitute mortgage advice, tax advice, legal advice, lender approval or agency referencing approval.
+- No live lender rates, no bank API, no automated tax-rule updates. Review `rules.js` after tax changes and update site copy.
 
-### Limits
+## Sources (verified 9 November 2026)
 
-The site is an illustrative estimator, not a filing system or guarantee of rental approval. It does **not** include Scottish Income Tax, dividends/savings-specific tax rates, student loans, pension relief, benefits-specific rules, multiple jobs or overlapping PAYE/self-employment for one person, marriage allowance, payments on account, VAT, losses or exact per-pay-period National Insurance. 'Other' income is simplified and may be subject to different rates or reliefs. Do not enter multiple types of taxable earnings for one individual as separate applicants: that incorrectly doubles their Personal Allowance. Do not use this app as a substitute for an accountant or HMRC.
+- https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
+- https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
+- https://www.gov.uk/stamp-duty-land-tax/residential-property-rates
+- https://www.gov.uk/first-homes-scheme
+- https://www.gov.uk/shared-ownership-scheme
+- https://www.gov.uk/shared-ownership-scheme/paying-rent
+- https://www.moneyhelper.org.uk/en/homes/buying-a-home/estimate-your-overall-buying-and-moving-costs
 
-### Official sources (rates reviewed 9 November 2026)
-
-- [HMRC Income Tax rates and allowances](https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past)
-- [HMRC National Insurance rates and allowances](https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions)
-- [Self-employed NI](https://www.gov.uk/self-employed-national-insurance-rates)
-
-For each future tax year, recheck these HMRC sources and update `TAX_YEARS` in `tax.js` before claiming the new rates are supported.
-
-
-## Tenant referencing checklist (added November 2026)
-
-The **Referencing checklist** tab gives first-time renters in **England** a plain-English breakdown of common, PAYE and self-employed checks, parties responsible, and statutory tenant protections. A progress checklist is saved locally in the browser. It does not ask users to upload documents. Official references are linked within the tab. The legal guidance is focused on England because Right to Rent and tenancy rules differ in Scotland, Wales and Northern Ireland.
-
-
-## Buying a Home (England)
-
-The purchase tab models standard repayment mortgages, a 5% deposit scenario through the Mortgage Guarantee Scheme, First Homes property discounts, Shared Ownership mortgage plus rent, and the *Your First Home* scheme (not accepting applications as of November 2026, expected February 2027).
-
-The tab includes adjustable house price, deposit, interest rate, mortgage length, property discount, shared ownership percentage, service charges and other ownership costs. It uses the existing household income for a simple illustrative 4.5× income borrowing test. This is **not** an offer, lender affordability decision or current lender quote. Shared ownership Stamp Duty requires legal advice and is deliberately omitted from its up-front estimate. 'Your First Home' shows published equity loan interest rates after five years but excludes future property value effects and possible fees. Rates are user-entered illustrative values, **not live offers from the linked banks**.
-
-The 2026 rules and programme sources are linked directly inside the app from GOV.UK, plus London City Hall. Stamp Duty estimates are for qualifying **England** transactions, not Scotland/Wales/Northern Ireland and exclude nonresident surcharges and higher rates. If any purchase is complex, obtain a solicitor's calculation.
-
-Data remains local to the user's browser; the site does not request uploads of sensitive financial documents.
-
-## First-visit tour (v5)
-
-The welcome popup appears automatically on the first visit to a browser. It briefly introduces applicant income, renting and referencing, and buying a home (including a tip to swipe the navigation tabs sideways on mobile). Visitors may skip, move backwards/forwards, or reopen it with **? Take the tour** in the header. The completion flag lives only in that browser's `localStorage`; no login or data transfer is involved. `tour.js` is required at the repository root.
-
-## V6: Buyer-first quick start
-
-The **Buying a home** tab begins with an optional beginner calculator. Buyers can reuse the incomes of up to five applicants from Overview or manually enter gross annual household income, enter their savings, monthly debt payments and emergency cash reserve. This produces an indicative standard buying budget and scenario cards for five first-time buyer routes. Clicking a route updates the full mortgage calculator.
-
-- Income assumptions default to **4.5×** annual income, with selectable 4×/5× illustrations. For a cautious debt scenario, monthly debt payments are subtracted from annual income as `monthly repayments × 12` before applying the multiple. This is *not a lender underwriting formula*.
-- The calculator reserves £2,500 for illustrative legal/moving costs, computes estimated England SDLT where applicable, and assumes a 5% deposit for standard routes. Savings and income both constrain the price estimate.
-- For Shared Ownership, the cash/mortgage estimate also applies a rough monthly mortgage + rent + service charge check of 35% of gross monthly household income minus monthly debt payments; actual lender/provider affordability tests are more comprehensive. Shared Ownership Stamp Duty is excluded and needs a solicitor's calculation.
-- First Homes scheme caps and income restrictions are displayed. Your First Home remains a **future scenario** for the expected February 2027 application launch, not an available scheme. Local price caps, qualifications and lender criteria must be checked.
-- **None of the scenario budgets are approval or a guaranteed entitlement.** All financial inputs and checklists remain in local browser storage; no account needed.
-
-Official reading: https://www.gov.uk/first-homes-scheme/overview ; https://www.gov.uk/shared-ownership-scheme/who-can-apply ; https://www.gov.uk/government/publications/your-first-home/your-first-home ; https://www.gov.uk/stamp-duty-land-tax/residential-property-rates
+Initial personal financial inputs **and editable buying-fee allowances** are zero. Click **Add suggested buying costs** to fill illustrative fees, then adjust to match actual quotes. Interest rate, term, deposit percentage, and income multiple are labelled modelling assumptions rather than personal funds.
